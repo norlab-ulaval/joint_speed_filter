@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
 const int WINDOW_SIZE = 5;
@@ -12,8 +12,8 @@ public:
     JointSpeedFilterNode():
             Node("joint_speed_filter_node")
     {
-        leftSidePublisher = this->create_publisher<std_msgs::msg::Float32>("left_wheel_vel", 10);
-        rightSidePublisher = this->create_publisher<std_msgs::msg::Float32>("right_wheel_vel", 10);
+        leftSidePublisher = this->create_publisher<std_msgs::msg::Float64>("left_wheel_vel", 10);
+        rightSidePublisher = this->create_publisher<std_msgs::msg::Float64>("right_wheel_vel", 10);
         subscription = this->create_subscription<sensor_msgs::msg::JointState>("joint_states_in", 10, std::bind(&JointSpeedFilterNode::callback, this, std::placeholders::_1));
     }
 
@@ -30,18 +30,18 @@ private:
             return;
         }
 
-        std_msgs::msg::Float32 leftWheelVel;
+        std_msgs::msg::Float64 leftWheelVel;
         leftWheelVel.data = float(previousJointStates.back().position[LEFT_JOINT_INDEX] - previousJointStates.front().position[LEFT_JOINT_INDEX]) /
                             (rclcpp::Time(previousJointStates.back().header.stamp) - rclcpp::Time(previousJointStates.front().header.stamp)).seconds();
         leftSidePublisher->publish(leftWheelVel);
-        std_msgs::msg::Float32 rightWheelVel;
+        std_msgs::msg::Float64 rightWheelVel;
         rightWheelVel.data = float(previousJointStates.back().position[RIGHT_JOINT_INDEX] - previousJointStates.front().position[RIGHT_JOINT_INDEX]) /
                              (rclcpp::Time(previousJointStates.back().header.stamp) - rclcpp::Time(previousJointStates.front().header.stamp)).seconds();
         rightSidePublisher->publish(rightWheelVel);
     }
 
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr leftSidePublisher;
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr rightSidePublisher;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr leftSidePublisher;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rightSidePublisher;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscription;
     std::list<sensor_msgs::msg::JointState> previousJointStates;
 };
